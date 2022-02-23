@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "hospitations_po"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.scripts]
+start_server = "hospitations_po.server.start:start"
+start_gui = "hospitations_po.gui.start:start"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.74.1"
+tk = "^0.1.0"
+SQLAlchemy = "^1.4.31"
+requests = "^2.27.1"
+uvicorn = "^0.17.5"
+psycopg2 = "^2.9.3"
+yapf = "^0.32.0"
+toml = "^0.10.2"
+mypy = "^0.931"
+types-requests = "^2.27.11"
+sqlalchemy-stubs = "^0.4"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.yapf]
+based_on_style = "pep8"
+spaces_before_comment = 4
+split_before_logical_operator = true
