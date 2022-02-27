@@ -13,7 +13,7 @@ CURRENT_DIRECTORY = os.getcwd()
 SERVER_ADDRESS = 'http://127.0.0.1:8000'
 
 
-def replace_frame(new_frame: tk.Frame, container) -> None:
+def replace_frame(new_frame: ttk.Frame, container) -> None:
     container.frame.destroy()
     container.frame = new_frame    # type annotanion not suported tk.Frame
     container.frame.pack(fill="both", expand=True)
