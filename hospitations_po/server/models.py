@@ -31,24 +31,24 @@ class Audit_commission(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_fk = Column(Integer,
-                           ForeignKey('user.id'),
-                           index=True,
-                           nullable=False)
+                     ForeignKey('user.id'),
+                     index=True,
+                     nullable=False)
 
 
 class Audit_commission_User(Base):
     __tablename__ = "audit_commission_user"
 
     audit_commission_fk = Column(Integer,
-                                     ForeignKey('audit_commission.id'),
-                                     index=True,
-                                     nullable=False,
-                                     primary_key=True)
+                                 ForeignKey('audit_commission.id'),
+                                 index=True,
+                                 nullable=False,
+                                 primary_key=True)
     user_fk = Column(Integer,
-                           ForeignKey('user.id'),
-                           index=True,
-                           nullable=False,
-                           primary_key=True)
+                     ForeignKey('user.id'),
+                     index=True,
+                     nullable=False,
+                     primary_key=True)
 
 
 class Mark(Base):
@@ -77,16 +77,16 @@ class Protocol(Base):
     use_of_tools_mark_fk = Column(Float, ForeignKey('mark.mark'))
     control_mark_fk = Column(Float, ForeignKey('mark.mark'))
     creation_mark_fk = Column(Float, ForeignKey('mark.mark'))
-    
+
 
 class Course(Base):
     __tablename__ = "course"
 
     id = Column(Integer, primary_key=True, index=True)
     user_fk = Column(Integer,
-                           ForeignKey('user.id'),
-                           index=True,
-                           nullable=False)
+                     ForeignKey('user.id'),
+                     index=True,
+                     nullable=False)
     name = Column(String, unique=True, nullable=False)
     code = Column(String, unique=True, nullable=False)
     level_and_form_of_study = Column(String, nullable=False)
@@ -102,15 +102,15 @@ class User_Course(Base):
     __tablename__ = "user_course"
 
     course_fk = Column(Integer,
-                     ForeignKey('course.id'),
+                       ForeignKey('course.id'),
+                       index=True,
+                       nullable=False,
+                       primary_key=True)
+    user_fk = Column(Integer,
+                     ForeignKey('user.id'),
                      index=True,
                      nullable=False,
                      primary_key=True)
-    user_fk = Column(Integer,
-                           ForeignKey('user.id'),
-                           index=True,
-                           nullable=False,
-                           primary_key=True)
 
 
 class Schedule(Base):
@@ -129,22 +129,22 @@ class Audit(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     audit_commission_fk = Column(Integer,
-                                     ForeignKey('audit_commission.id'),
-                                     index=True,
-                                     nullable=False)
+                                 ForeignKey('audit_commission.id'),
+                                 index=True,
+                                 nullable=False)
     schedule_fk = Column(Integer,
-                            ForeignKey('schedule.id'),
-                            index=True,
-                            nullable=False)
+                         ForeignKey('schedule.id'),
+                         index=True,
+                         nullable=False)
     user_fk = Column(Integer,
-                           ForeignKey('user.id'),
-                           index=True,
-                           nullable=False)
-    date = Column(Date, nullable=False)
-    course_fk = Column(Integer,
-                     ForeignKey('course.id'),
+                     ForeignKey('user.id'),
                      index=True,
                      nullable=False)
+    date = Column(Date, nullable=False)
+    course_fk = Column(Integer,
+                       ForeignKey('course.id'),
+                       index=True,
+                       nullable=False)
     protocol_fk = Column(Integer,
                          ForeignKey('protocol.id'),
                          index=True,
@@ -156,9 +156,9 @@ class Appeal(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_fk = Column(Integer,
-                           ForeignKey('user.id'),
-                           index=True,
-                           nullable=False)
+                     ForeignKey('user.id'),
+                     index=True,
+                     nullable=False)
     date = Column(Date, nullable=False)
     text = Column(String, nullable=False)
     protocol_fk = Column(Integer,

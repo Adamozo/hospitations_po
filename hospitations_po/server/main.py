@@ -21,6 +21,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app: FastAPI = FastAPI(title="Twoje hospitacje")
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -32,13 +33,12 @@ def get_db():
 @app.get("/protokoly/prowadzacy/{prowadzacy}",
          response_model=List[schemas.ProtocolShort])
 def get_protocols_tutor(
-    tutor_id: int,
-    db: Session = Depends(get_db)
+    tutor_id: int, db: Session = Depends(get_db)
 ) -> Optional[list[dict[str, Union[str, int, float]]]]:
     try:
-        protocols: list[dict[str,
-                             Union[str, int,
-                                   float]]] = crud.get_protocols_tutor(tutor_id, db)
+        protocols: list[dict[str, Union[str, int,
+                                        float]]] = crud.get_protocols_tutor(
+                                            tutor_id, db)
         if len(protocols) == 0:
             raise HTTPException(status_code=404, detail="Protocols not found")
         return protocols
@@ -99,13 +99,13 @@ def post_appeal(
 @app.get("/protokoly/przewodniczacy/{przewodniczacy}",
          response_model=List[schemas.ProtocolEdit])
 def get_protocols_comission_head(
-    user_id: int,
-    db: Session = Depends(get_db)
+    user_id: int, db: Session = Depends(get_db)
 ) -> list[dict[str, Union[int, bool, None, str]]]:
     try:
         protocols: list[dict[str,
                              Union[int, bool, None,
-                                   str]]] = crud.get_protocols_comission_head(user_id, db)
+                                   str]]] = crud.get_protocols_comission_head(
+                                       user_id, db)
         if len(protocols) == 0:
             raise HTTPException(status_code=404, detail="Protocols not found")
         return protocols
@@ -123,8 +123,8 @@ def get_course_protocol(
 ) -> Optional[dict[str, Union[str, int, None]]]:
     try:
         course: Optional[dict[str, Union[str, int,
-                                       None]]] = crud.get_course_protocol(
-                                           protocol_id, db)
+                                         None]]] = crud.get_course_protocol(
+                                             protocol_id, db)
         if course is None:
             raise HTTPException(status_code=404, detail="Kurs not found")
         return course
@@ -182,9 +182,10 @@ def get_audits_to_do(
     user_id, db: Session = Depends(get_db)
 ) -> Optional[list[dict[str, Union[Date, str, bool, int, None]]]]:
     try:
-        audits: Optional[list[dict[
-            str, Union[Date, str, bool, int,
-                       None]]]] = crud.get_audits_schedule(user_id, db)
+        audits: Optional[list[dict[str,
+                                   Union[Date, str, bool, int,
+                                         None]]]] = crud.get_audits_schedule(
+                                             user_id, db)
         if len(audits) == 0:
             raise HTTPException(status_code=404, detail="Protocols not found")
         return audits
@@ -202,8 +203,7 @@ def get_audit_details(
     audit_id, db: Session = Depends(get_db)
 ) -> Optional[dict[str, Union[Date, str, int, None]]]:
     try:
-        audit: Optional[dict[str,
-                                  Union[Date, str, int,
+        audit: Optional[dict[str, Union[Date, str, int,
                                         None]]] = crud.get_audits_details(
                                             audit_id, db)
         if audit is None:
@@ -218,7 +218,8 @@ def get_audit_details(
 
 
 @app.put("/protokol/set_true/{protokol_id}", response_model=Boolean)
-def put_accept_protocol(protocol_id: int, db: Session = Depends(get_db)) -> bool:
+def put_accept_protocol(
+    protocol_id: int, db: Session = Depends(get_db)) -> bool:
     try:
         is_success: bool = crud.put_confirm_protocol(protocol_id, db)
         if is_success:
@@ -234,8 +235,8 @@ def put_accept_protocol(protocol_id: int, db: Session = Depends(get_db)) -> bool
 
 @app.delete('/odwolanie/delete/{protokol_id}', response_model=Boolean)
 def delete_appeal(protocol_id: int,
-                     user_id: int,
-                     db: Session = Depends(get_db)) -> bool:
+                  user_id: int,
+                  db: Session = Depends(get_db)) -> bool:
     try:
         result = crud.delete_appeal(protocol_id, user_id, db=db)
         return result

@@ -10,8 +10,7 @@ from datetime import datetime
 
 
 def get_protocols_tutor(
-        user_id: int,
-        db: Session) -> list[dict[str, Union[str, int, float]]]:
+        user_id: int, db: Session) -> list[dict[str, Union[str, int, float]]]:
     res: list[tuple[str, bool, int, str, str, float]] = db.query(models.Audit.date, models.Protocol.is_approved, models.Protocol.id,\
          models.Protocol.mark, models.Course.code, models.Course.name)\
         .join(models.Protocol, models.Audit.protocol_fk == models.Protocol.id)\
@@ -59,9 +58,12 @@ def get_appeal(protocol_id: int, db: Session) -> Optional[models.Appeal]:
         models.Appeal.protocol_fk == protocol_id).first()
 
 
-def insert_appeal(appeal: schemas.AppealCreate, user_id: int,
-                     protocol_id: int, db: Session) -> models.Appeal:
-    new_appeal: models.Appeal = models.Appeal(text=appeal.text, user_fk=user_id, protocol_fk=protocol_id, date=appeal.date)
+def insert_appeal(appeal: schemas.AppealCreate, user_id: int, protocol_id: int,
+                  db: Session) -> models.Appeal:
+    new_appeal: models.Appeal = models.Appeal(text=appeal.text,
+                                              user_fk=user_id,
+                                              protocol_fk=protocol_id,
+                                              date=appeal.date)
     db.add(new_appeal)
     db.commit()
     db.refresh(new_appeal)
@@ -224,8 +226,8 @@ def get_audits_schedule(
 def get_audits_details(
         audit_id: int,
         db: Session) -> Optional[dict[str, Union[Date, str, int, None]]]:
-    temp: Optional[tuple[int]] = db.query(models.Audit.course_fk).filter(
-        models.Audit.id == (audit_id)).first()
+    temp: Optional[tuple[int]] = db.query(
+        models.Audit.course_fk).filter(models.Audit.id == (audit_id)).first()
     if temp is None:
         return None
 
@@ -238,18 +240,17 @@ def get_audits_details(
 
     r: Optional[tuple[Date, int, str, str, str, str, str, str, str, str, int,
                       str, str]] = db.query(
-                          models.Audit.date,
-                          models.Audit.id, models.Course.code,
-                          models.Course.name, models.User.name,
-                          models.User.surname,
+                          models.Audit.date, models.Audit.id,
+                          models.Course.code, models.Course.name,
+                          models.User.name, models.User.surname,
                           models.Course.level_and_form_of_study,
                           models.Course.didactic_form, models.Course.date,
-                          models.Course.participants_number, models.Course.place,
+                          models.Course.participants_number,
+                          models.Course.place,
                           models.Course.organizational_entity).filter(
-                              and_(
-                                  models.Course.id == course,
-                                  models.Audit.id == audit_id,
-                                  models.User.id == user)).first()
+                              and_(models.Course.id == course,
+                                   models.Audit.id == audit_id,
+                                   models.User.id == user)).first()
 
     return {
         "date": r[0],
