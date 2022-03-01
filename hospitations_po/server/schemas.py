@@ -7,90 +7,90 @@ from pydantic import BaseModel
 from datetime import date, datetime
 
 
-class OdwolanieBase(BaseModel):
-    tekst: str
-    data_odwolanie: date
-
-
-class OdwolanieCreate(OdwolanieBase):
-
-    class Config:
-        orm_mode = True
-
-
-class Odwolanie(OdwolanieBase):
-    uzytkownik_fk: int
-    protokol_fk: int
-
-    class Config:
-        orm_mode = True
-
-
-class ProtokolBase(BaseModel):
+class AppealBase(BaseModel):
+    text: str
     date: date
-    czy_zatwierdzony: Boolean
 
 
-class ProtokolCreate(ProtokolBase):
-
-    class Config:
-        orm_mode = True
-
-
-class Protokol(ProtokolBase):
-    ocena: Optional[str] = None
-    uzasadnienie: Optional[str] = None
-    wnioski_i_zalecenia: Optional[str] = None
-    data_zapoznania: Optional[date] = None
-    czy_przeslany: Boolean
-    przedstawienie_ocena_fk: Optional[float] = None
-    wyjasnienie_ocena_fk: Optional[float] = None
-    realizacja_ocena_fk: Optional[float] = None
-    inspiracja_ocena_fk: Optional[float] = None
-    udzielenie_ocena_fk: Optional[float] = None
-    stosowanie_ocena_fk: Optional[float] = None
-    poslugiwanie_ocena_fk: Optional[float] = None
-    panowanie_ocena_fk: Optional[float] = None
-    tworzenie_ocena_fk: Optional[float] = None
+class AppealCreate(AppealBase):
 
     class Config:
         orm_mode = True
 
 
-class ProtokolShort(ProtokolBase):
+class Appeal(AppealBase):
+    user_fk: int
+    protocol_fk: int
+
+    class Config:
+        orm_mode = True
+
+
+class ProtocolBase(BaseModel):
+    date: date
+    is_approved: Boolean
+
+
+class ProtocolCreate(ProtocolBase):
+
+    class Config:
+        orm_mode = True
+
+
+class Protocol(ProtocolBase):
+    mark: Optional[str] = None
+    justification: Optional[str] = None
+    conclusions_and_recommendations: Optional[str] = None
+    read_date: Optional[date] = None
+    is_sent: Boolean
+    presentation_mark_fk: Optional[float] = None
+    explanation_mark_fk: Optional[float] = None
+    realization_mark_fk: Optional[float] = None
+    inspiration_mark_fk: Optional[float] = None
+    participation_mark_fk: Optional[float] = None
+    use_of_learning_methods_mark_fk: Optional[float] = None
+    use_of_tools_mark_fk: Optional[float] = None
+    control_mark_fk: Optional[float] = None
+    creation_mark_fk: Optional[float] = None
+
+    class Config:
+        orm_mode = True
+
+
+class ProtocolShort(ProtocolBase):
     id: int
-    nr_kursu: str
-    nazwa_kursu: str
-    ocena: Optional[str] = None
+    cournse_number: str
+    course_name: str
+    mark: Optional[str] = None
 
 
-class ProtokolEdit(ProtokolBase):
+class ProtocolEdit(ProtocolBase):
     id: int
-    nr_kursu: str
-    nazwa_kursu: str
-    hospitowany_imie: str
-    hospitowany_nazwisko: str
-    czy_przeslany: Boolean
+    cournse_number: str
+    course_name: str
+    audited_name: str
+    audited_surname: str
+    is_sent: Boolean
 
 
-class ProtokolDetails(ProtokolEdit):
-    stopien_i_froma_studiow: str
-    forma_dydaktyczna: str
-    termin: str
-    liczba_uczestnikow: int
-    miejsce: str
-    jednostka_organizacyjna: str
+class ProtocolDetails(ProtocolEdit):
+    level_and_form_of_study: str
+    didactic_form: str
+    date: str
+    participants_number: int
+    place: str
+    organizational_entity: str
 
 
-class Kurs(BaseModel):
+class Course(BaseModel):
     id: int
-    uzytkownik_fk: int
-    nazwa: str
-    kod: str
-    stopien_i_froma_studiow: str
-    forma_dydaktyczna: str
-    termin: str
-    liczba_uczestnikow: int
-    miejsce: str
-    jednostka_organizacyjna: str
-    semestr: str
+    user_fk: int
+    name: str
+    code: str
+    level_and_form_of_study: str
+    didactic_form: str
+    date: str
+    participants_number: int
+    place: str
+    organizational_entity: str
+    term: str

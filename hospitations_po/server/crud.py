@@ -9,15 +9,14 @@ from typing import Any, Optional, Union
 from datetime import datetime
 
 
-def get_protokoly_prowadzacy(
+def get_protocols_tutor(
         user_id: int,
-        db: Session,
-        skip: int = 0,
-        limit: int = 100) -> list[dict[str, Union[str, int, float]]]:
-    res: list[tuple[str, bool, int, str, str, float]] = db.query(models.Hospitacja.data_hospitacji, models.Protokol.czy_zatwierdzona, models.Protokol.id, models.Protokol.ocena, models.Kurs.kod, models.Kurs.nazwa)\
-        .join(models.Protokol, models.Hospitacja.protokol_fk == models.Protokol.id)\
-            .join(models.Kurs, models.Kurs.id == models.Hospitacja.kurs_fk)\
-                .filter(models.Hospitacja.uzytkownik_fk == user_id).all()
+        db: Session) -> list[dict[str, Union[str, int, float]]]:
+    res: list[tuple[str, bool, int, str, str, float]] = db.query(models.Audit.date, models.Protocol.is_approved, models.Protocol.id,\
+         models.Protocol.mark, models.Course.code, models.Course.name)\
+        .join(models.Protocol, models.Audit.protocol_fk == models.Protocol.id)\
+            .join(models.Course, models.Course.id == models.Audit.course_fk)\
+                .filter(models.Audit.user_fk == user_id).all()
 
     return [{
         "date": r[0],
@@ -25,92 +24,88 @@ def get_protokoly_prowadzacy(
         "id": r[2],
         "nr_kursu": r[4],
         "nazwa_kursu": r[5],
-        "ocena": r[3]
+        "mark": r[3]
     } for r in res]
 
 
-def get_protokol(protokol_id: int, db: Session) -> Optional[dict[str, Any]]:
-    protokol: Optional[models.Protokol] = db.query(
-        models.Protokol).filter(models.Protokol.id == protokol_id).first()
-    if protokol is None:
+def get_protocol(protocol_id: int, db: Session) -> Optional[dict[str, Any]]:
+    protocol: Optional[models.Protocol] = db.query(
+        models.Protocol).filter(models.Protocol.id == protocol_id).first()
+    if protocol is None:
         return None
 
     return {
-        "date": protokol.data_protokol,
-        "czy_zatwierdzony": protokol.czy_zatwierdzona,
-        "ocena": protokol.ocena,
-        "uzasadnienie": protokol.uzasadnienie,
-        "wnioski_i_zalecenia": protokol.wnioski_i_zalecenia,
-        "data_zapoznania": protokol.data_zapoznania,
-        "czy_przeslany": protokol.czy_przeslany,
-        "przedstawienie_ocena_fk": protokol.przedstawienie_ocena_fk,
-        "wyjasnienie_ocena_fk": protokol.wyjasnienie_ocena_fk,
-        "realizacja_ocena_fk": protokol.realizacja_ocena_fk,
-        "inspiracja_ocena_fk": protokol.inspiracja_ocena_fk,
-        "udzielenie_ocena_fk": protokol.udzielenie_ocena_fk,
-        "stosowanie_ocena_fk": protokol.stosowanie_ocena_fk,
-        "poslugiwanie_ocena_fk": protokol.poslugiwanie_ocena_fk,
-        "panowanie_ocena_fk": protokol.panowanie_ocena_fk,
-        "tworzenie_ocena_fk": protokol.tworzenie_ocena_fk
+        "date": protocol.date,
+        "czy_zatwierdzony": protocol.is_approved,
+        "mark": protocol.mark,
+        "uzasadnienie": protocol.justification,
+        "wnioski_i_zalecenia": protocol.conclusions_and_recommendations,
+        "data_zapoznania": protocol.read_date,
+        "czy_przeslany": protocol.is_sent,
+        "przedstawienie_mark_fk": protocol.presentation_mark_fk,
+        "wyjasnienie_mark_fk": protocol.explanation_mark_fk,
+        "realizacja_mark_fk": protocol.realization_mark_fk,
+        "inspiracja_mark_fk": protocol.inspiration_mark_fk,
+        "udzielenie_mark_fk": protocol.participation_mark_fk,
+        "stosowanie_mark_fk": protocol.use_of_learning_methods_mark_fk,
+        "poslugiwanie_mark_fk": protocol.use_of_tools_mark_fk,
+        "panowanie_mark_fk": protocol.control_mark_fk,
+        "tworzenie_mark_fk": protocol.creation_mark_fk
     }
 
 
-def get_odwolanie(protokol_id: int, db: Session) -> Optional[models.Odwolanie]:
-    return db.query(models.Odwolanie).filter(
-        models.Odwolanie.protokol_fk == protokol_id).first()
+def get_appeal(protocol_id: int, db: Session) -> Optional[models.Appeal]:
+    return db.query(models.Appeal).filter(
+        models.Appeal.protocol_fk == protocol_id).first()
 
 
-def insert_odwolanie(odwolanie: schemas.OdwolanieCreate, user_id: int,
-                     protokol_id: int, db: Session) -> models.Odwolanie:
-    new_odwolanie: models.Odwolanie = models.Odwolanie(
-        tekst=odwolanie.tekst,
-        uzytkownik_fk=user_id,
-        protokol_fk=protokol_id,
-        data_odwolanie=odwolanie.data_odwolanie)
-    db.add(new_odwolanie)
+def insert_appeal(appeal: schemas.AppealCreate, user_id: int,
+                     protocol_id: int, db: Session) -> models.Appeal:
+    new_appeal: models.Appeal = models.Appeal(text=appeal.text, user_fk=user_id, protocol_fk=protocol_id, date=appeal.date)
+    db.add(new_appeal)
     db.commit()
-    db.refresh(new_odwolanie)
-    return new_odwolanie
+    db.refresh(new_appeal)
+    return new_appeal
 
 
-def get_kurs_protokol(
-        protokol_id: int,
+def get_course_protocol(
+        protocol_id: int,
         db: Session) -> Optional[dict[str, Union[str, int, None]]]:
-    hospitacja_kurs: Optional[tuple[int]] = db.query(
-        models.Hospitacja.kurs_fk).filter(
-            models.Hospitacja.protokol_fk == protokol_id).first()
-    if hospitacja_kurs is not None:
-        kurs: Optional[models.Kurs] = db.query(
-            models.Kurs).filter(models.Kurs.id == hospitacja_kurs[0]).first()
+    audit_course: Optional[tuple[int]] = db.query(
+        models.Audit.course_fk).filter(
+            models.Audit.protocol_fk == protocol_id).first()
+    if audit_course is not None:
+        course: Optional[models.Course] = db.query(
+            models.Course).filter(models.Course.id == audit_course[0]).first()
         res: dict[str, Union[int, str, None]] = {
-            "id": kurs.id,
-            "uzytkownik_fk": kurs.uzytkownik_fk,
-            "nazwa": kurs.nazwa,
-            "kod": kurs.kod,
-            "stopien_i_froma_studiow": kurs.stopien_i_froma_studiow,
-            "forma_dydaktyczna": kurs.forma_dydaktyczna,
-            "termin": kurs.termin,
-            "liczba_uczestnikow": kurs.liczba_uczestnikow,
-            "miejsce": kurs.miejsce,
-            "jednostka_organizacyjna": kurs.jednostka_organizacyjna,
-            "semestr": kurs.semestr
+            "id": course.id,
+            "user_fk": course.user_fk,
+            "nazwa": course.name,
+            "kod": course.code,
+            "stopien_i_froma_studiow": course.level_and_form_of_study,
+            "forma_dydaktyczna": course.didactic_form,
+            "termin": course.date,
+            "liczba_uczestnikow": course.participants_number,
+            "miejsce": course.place,
+            "jednostka_organizacyjna": course.organizational_entity,
+            "semestr": course.term
         }
         return res
 
     return None
 
 
-def get_protokoly_przewodniczacy(
+def get_protocols_comission_head(
         user_id: int,
-        db: Session,
-        skip: int = 0,
-        limit: int = 100) -> list[dict[str, Union[int, bool, None, str]]]:
-    res: Optional[list[tuple[str, bool, int, str, str, str, str, bool]]] = db.query(models.Hospitacja.data_hospitacji, models.Protokol.czy_zatwierdzona, models.Protokol.id, models.Kurs.kod, models.Kurs.nazwa, models.Uzytkownik.imie, models.Uzytkownik.nazwisko, models.Protokol.czy_przeslany)\
-        .join(models.Protokol, models.Hospitacja.protokol_fk == models.Protokol.id)\
-            .join(models.Kurs, models.Hospitacja.kurs_fk == models.Kurs.id)\
-                .join(models.Uzytkownik, models.Hospitacja.uzytkownik_fk == models.Uzytkownik.id)\
-                    .join(models.Komisja_hospitacyjna, models.Hospitacja.komisja_hospitacyjna_fk == models.Komisja_hospitacyjna.id)\
-                        .filter(models.Komisja_hospitacyjna.uzytkownik_fk == user_id).all()
+        db: Session) -> list[dict[str, Union[int, bool, None, str]]]:
+    res: Optional[list[tuple[str, bool, int, str, str, str, str, bool]]] = \
+        db.query(models.Audit.date, models.Protocol.is_approved, models.Protocol.id, models.Course.code, models.Course.name, models.User.name\
+            , models.User.surname, models.Protocol.is_sent)\
+        .join(models.Protocol, models.Audit.protocol_fk == models.Protocol.id)\
+            .join(models.Course, models.Audit.course_fk == models.Course.id)\
+                .join(models.User, models.Audit.user_fk == models.User.id)\
+                    .join(models.Audit_commission, models.Audit.audit_commission_fk == models.Audit_commission.id)\
+                        .filter(models.Audit_commission.user_fk == user_id).all()
 
     return [{
         "date": r[0],
@@ -125,94 +120,94 @@ def get_protokoly_przewodniczacy(
 
 
 def update_protocol(
-        protocol: schemas.Protokol, protokol_id: int, db: Session
+        protocol: schemas.Protocol, protocol_id: int, db: Session
 ) -> Optional[dict[str, Union[int, str, Decimal, Date, None]]]:
-    prot: Optional[models.Protokol] = db.query(
-        models.Protokol).filter(models.Protokol.id == protokol_id).first()
+    prot: Optional[models.Protocol] = db.query(
+        models.Protocol).filter(models.Protocol.id == protocol_id).first()
     if prot is None:
         return None
 
     db.query(
-        models.Protokol).filter(models.Protokol.id == protokol_id).update({
-            models.Protokol.uzasadnienie:
-            protocol.uzasadnienie,
-            models.Protokol.ocena:
-            protocol.ocena,
-            models.Protokol.wnioski_i_zalecenia:
-            protocol.wnioski_i_zalecenia,
-            models.Protokol.data_zapoznania:
-            protocol.data_zapoznania,
-            models.Protokol.czy_zatwierdzona:
-            protocol.czy_zatwierdzony,
-            models.Protokol.czy_przeslany:
-            protocol.czy_przeslany,
-            models.Protokol.przedstawienie_ocena_fk:
-            protocol.przedstawienie_ocena_fk,
-            models.Protokol.wyjasnienie_ocena_fk:
-            protocol.wyjasnienie_ocena_fk,
-            models.Protokol.realizacja_ocena_fk:
-            protocol.realizacja_ocena_fk,
-            models.Protokol.inspiracja_ocena_fk:
-            protocol.inspiracja_ocena_fk,
-            models.Protokol.udzielenie_ocena_fk:
-            protocol.udzielenie_ocena_fk,
-            models.Protokol.stosowanie_ocena_fk:
-            protocol.stosowanie_ocena_fk,
-            models.Protokol.poslugiwanie_ocena_fk:
-            protocol.poslugiwanie_ocena_fk,
-            models.Protokol.panowanie_ocena_fk:
-            protocol.panowanie_ocena_fk,
-            models.Protokol.tworzenie_ocena_fk:
-            protocol.tworzenie_ocena_fk
+        models.Protocol).filter(models.Protocol.id == protocol_id).update({
+            models.Protocol.justification:
+            protocol.justification,
+            models.Protocol.mark:
+            protocol.mark,
+            models.Protocol.conclusions_and_recommendations:
+            protocol.conclusions_and_recommendations,
+            models.Protocol.read_date:
+            protocol.read_date,
+            models.Protocol.is_approved:
+            protocol.is_approved,
+            models.Protocol.is_sent:
+            protocol.is_sent,
+            models.Protocol.presentation_mark_fk:
+            protocol.presentation_mark_fk,
+            models.Protocol.explanation_mark_fk:
+            protocol.explanation_mark_fk,
+            models.Protocol.realization_mark_fk:
+            protocol.realization_mark_fk,
+            models.Protocol.inspiration_mark_fk:
+            protocol.inspiration_mark_fk,
+            models.Protocol.participation_mark_fk:
+            protocol.participation_mark_fk,
+            models.Protocol.use_of_learning_methods_mark_fk:
+            protocol.use_of_learning_methods_mark_fk,
+            models.Protocol.use_of_tools_mark_fk:
+            protocol.use_of_tools_mark_fk,
+            models.Protocol.control_mark_fk:
+            protocol.control_mark_fk,
+            models.Protocol.creation_mark_fk:
+            protocol.creation_mark_fk
         })
     db.commit()
 
     prot = db.query(
-        models.Protokol).filter(models.Protokol.id == protokol_id).first()
+        models.Protocol).filter(models.Protocol.id == protocol_id).first()
 
     return {
-        "date": prot.data_protokol,
-        "czy_zatwierdzony": prot.czy_zatwierdzona,
-        "ocena": prot.ocena,
-        "uzasadnienie": prot.uzasadnienie,
-        "wnioski_i_zalecenia": prot.wnioski_i_zalecenia,
-        "data_zapoznania": prot.data_zapoznania,
-        "czy_przeslany": prot.czy_przeslany,
-        "przedstawienie_ocena_fk": prot.przedstawienie_ocena_fk,
-        "wyjasnienie_ocena_fk": prot.wyjasnienie_ocena_fk,
-        "realizacja_ocena_fk": prot.realizacja_ocena_fk,
-        "inspiracja_ocena_fk": prot.inspiracja_ocena_fk,
-        "udzielenie_ocena_fk": prot.udzielenie_ocena_fk,
-        "stosowanie_ocena_fk": prot.stosowanie_ocena_fk,
-        "poslugiwanie_ocena_fk": prot.poslugiwanie_ocena_fk,
-        "panowanie_ocena_fk": prot.panowanie_ocena_fk,
-        "tworzenie_ocena_fk": prot.tworzenie_ocena_fk
+        "date": prot.date,
+        "czy_zatwierdzony": prot.is_approved,
+        "mark": prot.mark,
+        "uzasadnienie": prot.justification,
+        "wnioski_i_zalecenia": prot.conclusions_and_recommendations,
+        "data_zapoznania": prot.read_date,
+        "czy_przeslany": prot.is_sent,
+        "przedstawienie_mark_fk": prot.presentation_mark_fk,
+        "wyjasnienie_mark_fk": prot.explanation_mark_fk,
+        "realizacja_mark_fk": prot.realization_mark_fk,
+        "inspiracja_mark_fk": prot.inspiration_mark_fk,
+        "udzielenie_mark_fk": prot.participation_mark_fk,
+        "stosowanie_mark_fk": prot.use_of_learning_methods_mark_fk,
+        "poslugiwanie_mark_fk": prot.use_of_tools_mark_fk,
+        "panowanie_mark_fk": prot.control_mark_fk,
+        "tworzenie_mark_fk": prot.creation_mark_fk
     }
 
 
-def get_protokol_odwolanie(protokol_id: int, db: Session) -> bool:
-    odwolanie: Optional[tuple[int]] = db.query(models.Odwolanie.id).filter(
-        models.Odwolanie.protokol_fk == protokol_id).first()
+def get_protocol_appeal(protocol_id: int, db: Session) -> bool:
+    appeal: Optional[tuple[int]] = db.query(models.Appeal.id).filter(
+        models.Appeal.protocol_fk == protocol_id).first()
 
-    return odwolanie is not None
+    return appeal is not None
 
 
-def get_terminarz_hospitacji(
+def get_audits_schedule(
     user_id: int, db: Session
 ) -> Optional[list[dict[str, Union[Date, str, bool, int, None]]]]:
-    temp: Query[tuple[int]] = db.query(models.Komisja_hospitacyjna.id).filter(
-        models.Komisja_hospitacyjna.uzytkownik_fk == user_id)
+    temp: Query[tuple[int]] = db.query(models.Audit_commission.id).filter(
+        models.Audit_commission.user_fk == user_id)
     komisje: Optional[list[int]] = [id[0] for id in temp]
-    temp = db.query(models.Hospitacja.id).filter(
-        models.Hospitacja.komisja_hospitacyjna_fk.in_(komisje))
+    temp = db.query(models.Audit.id).filter(
+        models.Audit.audit_commission_fk.in_(komisje))
     hospitacje: Optional[list[int]] = [id[0] for id in temp]
-    temp = db.query(models.Hospitacja.kurs_fk).filter(
-        models.Hospitacja.id.in_(hospitacje))
-    kursy: Optional[list[int]] = [kurs[0] for kurs in temp]
-    res: Optional[list[tuple[Date, int, str, str, str, str]]] = db.query(models.Hospitacja.data_hospitacji, models.Hospitacja.id, models.Kurs.kod, models.Kurs.nazwa, models.Uzytkownik.imie,
-     models.Uzytkownik.nazwisko).join(models.Kurs, models.Kurs.id == models.Hospitacja.kurs_fk)\
-     .join(models.Uzytkownik, models.Uzytkownik.id == models.Hospitacja.uzytkownik_fk)\
-     .filter(and_(models.Kurs.id.in_(kursy), models.Hospitacja.id.in_(hospitacje))).all()
+    temp = db.query(models.Audit.course_fk).filter(
+        models.Audit.id.in_(hospitacje))
+    courses: Optional[list[int]] = [course[0] for course in temp]
+    res: Optional[list[tuple[Date, int, str, str, str, str]]] = db.query(models.Audit.date, models.Audit.id, models.Course.code, models.Course.name, models.User.name,
+     models.User.surname).join(models.Course, models.Course.id == models.Audit.course_fk)\
+     .join(models.User, models.User.id == models.Audit.user_fk)\
+     .filter(and_(models.Course.id.in_(courses), models.Audit.id.in_(hospitacje))).all()
 
     return [{
         "date": r[0],
@@ -226,35 +221,35 @@ def get_terminarz_hospitacji(
     } for r in res]
 
 
-def get_detalerz_hospitacji(
-        hospitacja_id: int,
+def get_audits_details(
+        audit_id: int,
         db: Session) -> Optional[dict[str, Union[Date, str, int, None]]]:
-    temp: Optional[tuple[int]] = db.query(models.Hospitacja.kurs_fk).filter(
-        models.Hospitacja.id == (hospitacja_id)).first()
+    temp: Optional[tuple[int]] = db.query(models.Audit.course_fk).filter(
+        models.Audit.id == (audit_id)).first()
     if temp is None:
         return None
 
-    kurs: int = temp[0]
+    course: int = temp[0]
 
-    temp = db.query(models.Uzytkownik.id).filter(
-        and_(models.Kurs.id == kurs,
-             models.Uzytkownik.id == models.Kurs.uzytkownik_fk)).first()
-    uzytkownik: int = temp[0]
+    temp = db.query(models.User.id).filter(
+        and_(models.Course.id == course,
+             models.User.id == models.Course.user_fk)).first()
+    user: int = temp[0]
 
     r: Optional[tuple[Date, int, str, str, str, str, str, str, str, str, int,
                       str, str]] = db.query(
-                          models.Hospitacja.data_hospitacji,
-                          models.Hospitacja.id, models.Kurs.kod,
-                          models.Kurs.nazwa, models.Uzytkownik.imie,
-                          models.Uzytkownik.nazwisko,
-                          models.Kurs.stopien_i_froma_studiow,
-                          models.Kurs.forma_dydaktyczna, models.Kurs.termin,
-                          models.Kurs.liczba_uczestnikow, models.Kurs.miejsce,
-                          models.Kurs.jednostka_organizacyjna).filter(
+                          models.Audit.date,
+                          models.Audit.id, models.Course.code,
+                          models.Course.name, models.User.name,
+                          models.User.surname,
+                          models.Course.level_and_form_of_study,
+                          models.Course.didactic_form, models.Course.date,
+                          models.Course.participants_number, models.Course.place,
+                          models.Course.organizational_entity).filter(
                               and_(
-                                  models.Kurs.id == kurs,
-                                  models.Hospitacja.id == hospitacja_id,
-                                  models.Uzytkownik.id == uzytkownik)).first()
+                                  models.Course.id == course,
+                                  models.Audit.id == Audit_id,
+                                  models.User.id == user)).first()
 
     return {
         "date": r[0],
@@ -274,52 +269,52 @@ def get_detalerz_hospitacji(
     }
 
 
-def put_zatwierdz_protokol(protokol_id: int, db: Session) -> bool:
-    prot: Optional[models.Protokol] = db.query(
-        models.Protokol).filter(models.Protokol.id == protokol_id).first()
+def put_confirm_protocol(protocol_id: int, db: Session) -> bool:
+    prot: Optional[models.Protocol] = db.query(
+        models.Protocol).filter(models.Protocol.id == protocol_id).first()
     if prot is None:
         return False
 
-    db.query(models.Protokol).filter(models.Protokol.id == protokol_id).update(
-        {models.Protokol.czy_zatwierdzona: True})
+    db.query(models.Protocol).filter(models.Protocol.id == protocol_id).update(
+        {models.Protocol.is_approved: True})
     db.commit()
 
-    prot = db.query(models.Protokol).filter(
-        and_(models.Protokol.id == protokol_id,
-             models.Protokol.czy_zatwierdzona == True)).first()
+    prot = db.query(models.Protocol).filter(
+        and_(models.Protocol.id == protocol_id,
+             models.Protocol.is_approved == True)).first()
     if prot is None:
         return False
 
     return True
 
 
-def delete_odwolanie(protocol_id: int, user_id: int, db: Session) -> bool:
-    odwolanie: Optional[models.Odwolanie] = db.query(models.Odwolanie).filter(
-        and_(models.Odwolanie.protokol_fk == protocol_id,
-             models.Odwolanie.uzytkownik_fk == user_id)).first()
-    db.delete(odwolanie)
+def delete_appeal(protocol_id: int, user_id: int, db: Session) -> bool:
+    appeal: Optional[models.Appeal] = db.query(models.Appeal).filter(
+        and_(models.Appeal.protocol_fk == protocol_id,
+             models.Appeal.user_fk == user_id)).first()
+    db.delete(appeal)
     db.commit()
-    odwolanie = db.query(models.Odwolanie).filter(
-        and_(models.Odwolanie.protokol_fk == protocol_id,
-             models.Odwolanie.uzytkownik_fk == user_id)).first()
-    if odwolanie is None:
+    appeal = db.query(models.Appeal).filter(
+        and_(models.Appeal.protocol_fk == protocol_id,
+             models.Appeal.user_fk == user_id)).first()
+    if appeal is None:
         return True
     return False
 
 
-def put_odtwierdz_protokol(protokol_id: int, db: Session) -> bool:
-    prot: Optional[models.Protokol] = db.query(
-        models.Protokol).filter(models.Protokol.id == protokol_id).first()
+def put_unconfirm_protocol(protocol_id: int, db: Session) -> bool:
+    prot: Optional[models.Protocol] = db.query(
+        models.Protocol).filter(models.Protocol.id == protocol_id).first()
     if prot is None:
         return False
 
-    db.query(models.Protokol).filter(models.Protokol.id == protokol_id).update(
-        {models.Protokol.czy_zatwierdzona: False})
+    db.query(models.Protocol).filter(models.Protocol.id == protocol_id).update(
+        {models.Protocol.czy_zatwierdzona: False})
     db.commit()
 
-    prot = db.query(models.Protokol).filter(
-        and_(models.Protokol.id == protokol_id,
-             models.Protokol.czy_zatwierdzona == False)).first()
+    prot = db.query(models.Protocol).filter(
+        and_(models.Protocol.id == protocol_id,
+             models.Protocol.is_approved == False)).first()
     if prot is None:
         return False
 

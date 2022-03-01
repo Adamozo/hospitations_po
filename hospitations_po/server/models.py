@@ -3,165 +3,165 @@ from sqlalchemy.schema import CheckConstraint
 from database import Base
 
 
-class Rola(Base):
-    __tablename__ = "rola"
+class Role(Base):
+    __tablename__ = "role"
 
     id = Column(Integer, primary_key=True, index=True)
     nazwa = Column(String, unique=True, nullable=False)
 
 
-class Uzytkownik(Base):
-    __tablename__ = "uzytkownik"
+class User(Base):
+    __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, index=True)
     login = Column(String, unique=True, nullable=False)
-    haslo = Column(String, nullable=False)
-    nr_telefonu = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    phone_number = Column(String, nullable=False)
     email = Column(String, nullable=False)
-    rola_fk = Column(Integer,
-                     ForeignKey('rola.id'),
+    role_fk = Column(Integer,
+                     ForeignKey('role.id'),
                      index=True,
                      nullable=False)
-    imie = Column(String, nullable=False)
-    nazwisko = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    surname = Column(String, nullable=False)
 
 
-class Komisja_hospitacyjna(Base):
-    __tablename__ = "komisja_hospitacyjna"
+class Audit_commission(Base):
+    __tablename__ = "audit_commission"
 
     id = Column(Integer, primary_key=True, index=True)
-    uzytkownik_fk = Column(Integer,
-                           ForeignKey('uzytkownik.id'),
+    user_fk = Column(Integer,
+                           ForeignKey('user.id'),
                            index=True,
                            nullable=False)
 
 
-class Komisja_kospitacyjna_Uzytkownik(Base):
-    __tablename__ = "komisja_kospitacyjna_uzytkownik"
+class Audit_commission_User(Base):
+    __tablename__ = "audit_commission_user"
 
-    komisja_hospitacyjna_fk = Column(Integer,
-                                     ForeignKey('komisja_hospitacyjna.id'),
+    audit_commission_fk = Column(Integer,
+                                     ForeignKey('audit_commission.id'),
                                      index=True,
                                      nullable=False,
                                      primary_key=True)
-    uzytkownik_fk = Column(Integer,
-                           ForeignKey('uzytkownik.id'),
+    user_fk = Column(Integer,
+                           ForeignKey('user.id'),
                            index=True,
                            nullable=False,
                            primary_key=True)
 
 
-class Ocena(Base):
-    __tablename__ = "ocena"
+class Mark(Base):
+    __tablename__ = "mark"
 
-    ocena = Column(Float, primary_key=True, unique=True)
-
-
-class Protokol(Base):
-    __tablename__ = "protokol"
-
-    id = Column(Integer, primary_key=True, index=True)
-    data_protokol = Column(Date, nullable=False)
-    ocena = Column(String)
-    uzasadnienie = Column(String)
-    wnioski_i_zalecenia = Column(String)
-    data_zapoznania = Column(Date)
-    czy_zatwierdzona = Column(Boolean, nullable=False)
-    czy_przeslany = Column(Boolean, nullable=False)
-    przedstawienie_ocena_fk = Column(Float, ForeignKey('ocena.ocena'))
-    wyjasnienie_ocena_fk = Column(Float, ForeignKey('ocena.ocena'))
-    realizacja_ocena_fk = Column(Float, ForeignKey('ocena.ocena'))
-    inspiracja_ocena_fk = Column(Float, ForeignKey('ocena.ocena'))
-    udzielenie_ocena_fk = Column(Float, ForeignKey('ocena.ocena'))
-    stosowanie_ocena_fk = Column(Float, ForeignKey('ocena.ocena'))
-    poslugiwanie_ocena_fk = Column(Float, ForeignKey('ocena.ocena'))
-    panowanie_ocena_fk = Column(Float, ForeignKey('ocena.ocena'))
-    tworzenie_ocena_fk = Column(Float, ForeignKey('ocena.ocena'))
+    mark = Column(Float, primary_key=True, unique=True)
 
 
-class Kurs(Base):
-    __tablename__ = "kurs"
+class Protocol(Base):
+    __tablename__ = "protocol"
 
     id = Column(Integer, primary_key=True, index=True)
-    uzytkownik_fk = Column(Integer,
-                           ForeignKey('uzytkownik.id'),
+    date = Column(Date, nullable=False)
+    mark = Column(String)
+    justification = Column(String)
+    conclusions_and_recommendations = Column(String)
+    read_date = Column(Date)
+    is_approved = Column(Boolean, nullable=False)
+    is_sent = Column(Boolean, nullable=False)
+    presentation_mark_fk = Column(Float, ForeignKey('mark.mark'))
+    explanation_mark_fk = Column(Float, ForeignKey('mark.mark'))
+    realization_mark_fk = Column(Float, ForeignKey('mark.mark'))
+    inspiration_mark_fk = Column(Float, ForeignKey('mark.mark'))
+    participation_mark_fk = Column(Float, ForeignKey('mark.mark'))
+    use_of_learning_methods_mark_fk = Column(Float, ForeignKey('mark.mark'))
+    use_of_tools_mark_fk = Column(Float, ForeignKey('mark.mark'))
+    control_mark_fk = Column(Float, ForeignKey('mark.mark'))
+    creation_mark_fk = Column(Float, ForeignKey('mark.mark'))
+    
+
+class Course(Base):
+    __tablename__ = "course"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_fk = Column(Integer,
+                           ForeignKey('user.id'),
                            index=True,
                            nullable=False)
-    nazwa = Column(String, unique=True, nullable=False)
-    kod = Column(String, unique=True, nullable=False)
-    stopien_i_froma_studiow = Column(String, nullable=False)
-    forma_dydaktyczna = Column(String, nullable=False)
-    termin = Column(String, nullable=False)
-    liczba_uczestnikow = Column(Integer, nullable=False)
-    miejsce = Column(String, nullable=False)
-    jednostka_organizacyjna = Column(String, nullable=False)
-    semestr = Column(String, nullable=False)
+    name = Column(String, unique=True, nullable=False)
+    code = Column(String, unique=True, nullable=False)
+    level_and_form_of_study = Column(String, nullable=False)
+    didactic_form = Column(String, nullable=False)
+    date = Column(String, nullable=False)
+    participants_number = Column(Integer, nullable=False)
+    place = Column(String, nullable=False)
+    organizational_entity = Column(String, nullable=False)
+    term = Column(String, nullable=False)
 
 
-class Uzytkownik_Kurs(Base):
-    __tablename__ = "uzytkownik_kurs"
+class User_Course(Base):
+    __tablename__ = "user_course"
 
-    kurs_fk = Column(Integer,
-                     ForeignKey('kurs.id'),
+    course_fk = Column(Integer,
+                     ForeignKey('course.id'),
                      index=True,
                      nullable=False,
                      primary_key=True)
-    uzytkownik_fk = Column(Integer,
-                           ForeignKey('uzytkownik.id'),
+    user_fk = Column(Integer,
+                           ForeignKey('user.id'),
                            index=True,
                            nullable=False,
                            primary_key=True)
 
 
-class Harmonogram(Base):
-    __tablename__ = "harmonogram"
+class Schedule(Base):
+    __tablename__ = "schedule"
 
     id = Column(Integer, nullable=False, index=True, primary_key=True)
-    semestr = Column(String(20), nullable=False)
-    rok_akademicki = Column(String(10), nullable=False)
-    data_zatwierdzenia = Column(Date)
-    poczatek_semestru = Column(Date, nullable=False)
-    koniec_semestru = Column(Date, nullable=False)
+    term = Column(String(20), nullable=False)
+    academic_year = Column(String(10), nullable=False)
+    approval_date = Column(Date)
+    term_start = Column(Date, nullable=False)
+    term_end = Column(Date, nullable=False)
 
 
-class Hospitacja(Base):
-    __tablename__ = "hospitacja"
+class Audit(Base):
+    __tablename__ = "audit"
 
     id = Column(Integer, primary_key=True, index=True)
-    komisja_hospitacyjna_fk = Column(Integer,
-                                     ForeignKey('komisja_hospitacyjna.id'),
+    audit_commission_fk = Column(Integer,
+                                     ForeignKey('audit_commission.id'),
                                      index=True,
                                      nullable=False)
-    harmonogram_fk = Column(Integer,
-                            ForeignKey('harmonogram.id'),
+    schedule_fk = Column(Integer,
+                            ForeignKey('schedule.id'),
                             index=True,
                             nullable=False)
-    uzytkownik_fk = Column(Integer,
-                           ForeignKey('uzytkownik.id'),
+    user_fk = Column(Integer,
+                           ForeignKey('user.id'),
                            index=True,
                            nullable=False)
-    data_hospitacji = Column(Date, nullable=False)
-    kurs_fk = Column(Integer,
-                     ForeignKey('kurs.id'),
+    date = Column(Date, nullable=False)
+    course_fk = Column(Integer,
+                     ForeignKey('course.id'),
                      index=True,
                      nullable=False)
-    protokol_fk = Column(Integer,
-                         ForeignKey('protokol.id'),
+    protocol_fk = Column(Integer,
+                         ForeignKey('protocol.id'),
                          index=True,
                          nullable=False)
 
 
-class Odwolanie(Base):
-    __tablename__ = "odwolanie"
+class Appeal(Base):
+    __tablename__ = "appeal"
 
     id = Column(Integer, primary_key=True, index=True)
-    uzytkownik_fk = Column(Integer,
-                           ForeignKey('uzytkownik.id'),
+    user_fk = Column(Integer,
+                           ForeignKey('user.id'),
                            index=True,
                            nullable=False)
-    data_odwolanie = Column(Date, nullable=False)
-    tekst = Column(String, nullable=False)
-    protokol_fk = Column(Integer,
-                         ForeignKey('protokol.id'),
+    date = Column(Date, nullable=False)
+    text = Column(String, nullable=False)
+    protocol_fk = Column(Integer,
+                         ForeignKey('protocol.id'),
                          index=True,
                          nullable=False)
