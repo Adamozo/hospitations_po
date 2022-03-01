@@ -76,7 +76,7 @@ class ProtocolEdit(ProtocolBase):
 class ProtocolDetails(ProtocolEdit):
     level_and_form_of_study: str
     didactic_form: str
-    date: str
+    date: date
     participants_number: int
     place: str
     organizational_entity: str

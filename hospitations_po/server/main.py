@@ -171,7 +171,7 @@ def put_protocol(
 def get_does_appeal_exists(
     protocol_id: int, db: Session = Depends(get_db)) -> bool:
     try:
-        return crud.get_protocol_appeal(protokol_id=protocol_id, db=db)
+        return crud.get_protocol_appeal(protocol_id=protocol_id, db=db)
 
     except:
         raise HTTPException(status_code=500, detail="Inner server error")

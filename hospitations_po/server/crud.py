@@ -248,7 +248,7 @@ def get_audits_details(
                           models.Course.organizational_entity).filter(
                               and_(
                                   models.Course.id == course,
-                                  models.Audit.id == Audit_id,
+                                  models.Audit.id == audit_id,
                                   models.User.id == user)).first()
 
     return {
