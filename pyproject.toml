@@ -21,6 +21,7 @@ toml = "^0.10.2"
 mypy = "^0.931"
 types-requests = "^2.27.11"
 sqlalchemy-stubs = "^0.4"
+alembic = "^1.7.6"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=5.2"
