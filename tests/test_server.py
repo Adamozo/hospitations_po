@@ -17,11 +17,16 @@ Base.metadata.create_all(bind=engine)
 
 
 def override_get_db():
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
+    connection = engine.connect()
+
+    transaction = connection.begin()
+
+    db = TestingSessionLocal(bind=connection)
+   
+    yield db
+    
+    db.rollback()
+    db.close()
 
 
 app.dependency_overrides[get_db] = override_get_db
@@ -30,4 +35,7 @@ client = TestClient(app)
 
 
 def test_create_user():
+    db = override_get_db() 
+    client = TestClient(app)
+
     assert 1==1
