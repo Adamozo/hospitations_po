@@ -4,18 +4,19 @@ from pyexpat import model
 from sqlite3 import Date
 from sqlalchemy.orm import Session, Query
 from sqlalchemy import and_, false, true
-import models, schemas
+from hospitations_po.server.models import *
+from hospitations_po.server.schemas import *
 from typing import Any, Optional, Union
 from datetime import datetime
 
 
 def get_protocols_tutor(
         user_id: int, db: Session) -> list[dict[str, Union[str, int, float]]]:
-    res: list[tuple[str, bool, int, str, str, float]] = db.query(models.Audit.date, models.Protocol.is_approved, models.Protocol.id,\
-         models.Protocol.mark, models.Course.code, models.Course.name)\
-        .join(models.Protocol, models.Audit.protocol_fk == models.Protocol.id)\
-            .join(models.Course, models.Course.id == models.Audit.course_fk)\
-                .filter(models.Audit.user_fk == user_id).all()
+    res: list[tuple[str, bool, int, str, str, float]] = db.query(Audit.date, Protocol.is_approved, Protocol.id,\
+          Protocol.mark,  Course.code,  Course.name)\
+        .join( Protocol,  Audit.protocol_fk ==  Protocol.id)\
+            .join( Course,  Course.id ==  Audit.course_fk)\
+                .filter( Audit.user_fk == user_id).all()
 
     return [{
         "date": r[0],
@@ -28,8 +29,8 @@ def get_protocols_tutor(
 
 
 def get_protocol(protocol_id: int, db: Session) -> Optional[dict[str, Any]]:
-    protocol: Optional[models.Protocol] = db.query(
-        models.Protocol).filter(models.Protocol.id == protocol_id).first()
+    protocol: Optional[ Protocol] = db.query(
+         Protocol).filter( Protocol.id == protocol_id).first()
     if protocol is None:
         return None
 
@@ -53,14 +54,14 @@ def get_protocol(protocol_id: int, db: Session) -> Optional[dict[str, Any]]:
     }
 
 
-def get_appeal(protocol_id: int, db: Session) -> Optional[models.Appeal]:
-    return db.query(models.Appeal).filter(
-        models.Appeal.protocol_fk == protocol_id).first()
+def get_appeal(protocol_id: int, db: Session) -> Optional[ Appeal]:
+    return db.query( Appeal).filter(
+         Appeal.protocol_fk == protocol_id).first()
 
 
-def insert_appeal(appeal: schemas.AppealCreate, user_id: int, protocol_id: int,
-                  db: Session) -> models.Appeal:
-    new_appeal: models.Appeal = models.Appeal(text=appeal.text,
+def insert_appeal(appeal:  AppealCreate, user_id: int, protocol_id: int,
+                  db: Session) ->  Appeal:
+    new_appeal:  Appeal =  Appeal(text=appeal.text,
                                               user_fk=user_id,
                                               protocol_fk=protocol_id,
                                               date=appeal.date)
@@ -74,11 +75,11 @@ def get_course_protocol(
         protocol_id: int,
         db: Session) -> Optional[dict[str, Union[str, int, None]]]:
     audit_course: Optional[tuple[int]] = db.query(
-        models.Audit.course_fk).filter(
-            models.Audit.protocol_fk == protocol_id).first()
+         Audit.course_fk).filter(
+             Audit.protocol_fk == protocol_id).first()
     if audit_course is not None:
-        course: Optional[models.Course] = db.query(
-            models.Course).filter(models.Course.id == audit_course[0]).first()
+        course: Optional[ Course] = db.query(
+             Course).filter( Course.id == audit_course[0]).first()
         res: dict[str, Union[int, str, None]] = {
             "id": course.id,
             "user_fk": course.user_fk,
@@ -101,13 +102,13 @@ def get_protocols_comission_head(
         user_id: int,
         db: Session) -> list[dict[str, Union[int, bool, None, str]]]:
     res: Optional[list[tuple[str, bool, int, str, str, str, str, bool]]] = \
-        db.query(models.Audit.date, models.Protocol.is_approved, models.Protocol.id, models.Course.code, models.Course.name, models.User.name\
-            , models.User.surname, models.Protocol.is_sent)\
-        .join(models.Protocol, models.Audit.protocol_fk == models.Protocol.id)\
-            .join(models.Course, models.Audit.course_fk == models.Course.id)\
-                .join(models.User, models.Audit.user_fk == models.User.id)\
-                    .join(models.Audit_commission, models.Audit.audit_commission_fk == models.Audit_commission.id)\
-                        .filter(models.Audit_commission.user_fk == user_id).all()
+        db.query( Audit.date,  Protocol.is_approved,  Protocol.id,  Course.code,  Course.name,  User.name\
+            ,  User.surname,  Protocol.is_sent)\
+        .join( Protocol,  Audit.protocol_fk ==  Protocol.id)\
+            .join( Course,  Audit.course_fk ==  Course.id)\
+                .join( User,  Audit.user_fk ==  User.id)\
+                    .join( Audit_commission,  Audit.audit_commission_fk ==  Audit_commission.id)\
+                        .filter( Audit_commission.user_fk == user_id).all()
 
     return [{
         "date": r[0],
@@ -122,50 +123,50 @@ def get_protocols_comission_head(
 
 
 def update_protocol(
-        protocol: schemas.Protocol, protocol_id: int, db: Session
+        protocol:  Protocol, protocol_id: int, db: Session
 ) -> Optional[dict[str, Union[int, str, Decimal, Date, None]]]:
-    prot: Optional[models.Protocol] = db.query(
-        models.Protocol).filter(models.Protocol.id == protocol_id).first()
+    prot: Optional[ Protocol] = db.query(
+         Protocol).filter( Protocol.id == protocol_id).first()
     if prot is None:
         return None
 
     db.query(
-        models.Protocol).filter(models.Protocol.id == protocol_id).update({
-            models.Protocol.justification:
+         Protocol).filter( Protocol.id == protocol_id).update({
+             Protocol.justification:
             protocol.justification,
-            models.Protocol.mark:
+             Protocol.mark:
             protocol.mark,
-            models.Protocol.conclusions_and_recommendations:
+             Protocol.conclusions_and_recommendations:
             protocol.conclusions_and_recommendations,
-            models.Protocol.read_date:
+             Protocol.read_date:
             protocol.read_date,
-            models.Protocol.is_approved:
+             Protocol.is_approved:
             protocol.is_approved,
-            models.Protocol.is_sent:
+             Protocol.is_sent:
             protocol.is_sent,
-            models.Protocol.presentation_mark_fk:
+             Protocol.presentation_mark_fk:
             protocol.presentation_mark_fk,
-            models.Protocol.explanation_mark_fk:
+             Protocol.explanation_mark_fk:
             protocol.explanation_mark_fk,
-            models.Protocol.realization_mark_fk:
+             Protocol.realization_mark_fk:
             protocol.realization_mark_fk,
-            models.Protocol.inspiration_mark_fk:
+             Protocol.inspiration_mark_fk:
             protocol.inspiration_mark_fk,
-            models.Protocol.participation_mark_fk:
+             Protocol.participation_mark_fk:
             protocol.participation_mark_fk,
-            models.Protocol.use_of_learning_methods_mark_fk:
+             Protocol.use_of_learning_methods_mark_fk:
             protocol.use_of_learning_methods_mark_fk,
-            models.Protocol.use_of_tools_mark_fk:
+             Protocol.use_of_tools_mark_fk:
             protocol.use_of_tools_mark_fk,
-            models.Protocol.control_mark_fk:
+             Protocol.control_mark_fk:
             protocol.control_mark_fk,
-            models.Protocol.creation_mark_fk:
+             Protocol.creation_mark_fk:
             protocol.creation_mark_fk
         })
     db.commit()
 
     prot = db.query(
-        models.Protocol).filter(models.Protocol.id == protocol_id).first()
+         Protocol).filter( Protocol.id == protocol_id).first()
 
     return {
         "date": prot.date,
@@ -188,8 +189,8 @@ def update_protocol(
 
 
 def get_protocol_appeal(protocol_id: int, db: Session) -> bool:
-    appeal: Optional[tuple[int]] = db.query(models.Appeal.id).filter(
-        models.Appeal.protocol_fk == protocol_id).first()
+    appeal: Optional[tuple[int]] = db.query( Appeal.id).filter(
+         Appeal.protocol_fk == protocol_id).first()
 
     return appeal is not None
 
@@ -197,19 +198,19 @@ def get_protocol_appeal(protocol_id: int, db: Session) -> bool:
 def get_audits_schedule(
     user_id: int, db: Session
 ) -> Optional[list[dict[str, Union[Date, str, bool, int, None]]]]:
-    temp: Query[tuple[int]] = db.query(models.Audit_commission.id).filter(
-        models.Audit_commission.user_fk == user_id)
+    temp: Query[tuple[int]] = db.query( Audit_commission.id).filter(
+         Audit_commission.user_fk == user_id)
     komisje: Optional[list[int]] = [id[0] for id in temp]
-    temp = db.query(models.Audit.id).filter(
-        models.Audit.audit_commission_fk.in_(komisje))
+    temp = db.query( Audit.id).filter(
+         Audit.audit_commission_fk.in_(komisje))
     hospitacje: Optional[list[int]] = [id[0] for id in temp]
-    temp = db.query(models.Audit.course_fk).filter(
-        models.Audit.id.in_(hospitacje))
+    temp = db.query( Audit.course_fk).filter(
+         Audit.id.in_(hospitacje))
     courses: Optional[list[int]] = [course[0] for course in temp]
-    res: Optional[list[tuple[Date, int, str, str, str, str]]] = db.query(models.Audit.date, models.Audit.id, models.Course.code, models.Course.name, models.User.name,
-     models.User.surname).join(models.Course, models.Course.id == models.Audit.course_fk)\
-     .join(models.User, models.User.id == models.Audit.user_fk)\
-     .filter(and_(models.Course.id.in_(courses), models.Audit.id.in_(hospitacje))).all()
+    res: Optional[list[tuple[Date, int, str, str, str, str]]] = db.query( Audit.date,  Audit.id,  Course.code,  Course.name,  User.name,
+      User.surname).join( Course,  Course.id ==  Audit.course_fk)\
+     .join( User,  User.id ==  Audit.user_fk)\
+     .filter(and_( Course.id.in_(courses),  Audit.id.in_(hospitacje))).all()
 
     return [{
         "date": r[0],
@@ -227,30 +228,30 @@ def get_audits_details(
         audit_id: int,
         db: Session) -> Optional[dict[str, Union[Date, str, int, None]]]:
     temp: Optional[tuple[int]] = db.query(
-        models.Audit.course_fk).filter(models.Audit.id == (audit_id)).first()
+         Audit.course_fk).filter( Audit.id == (audit_id)).first()
     if temp is None:
         return None
 
     course: int = temp[0]
 
-    temp = db.query(models.User.id).filter(
-        and_(models.Course.id == course,
-             models.User.id == models.Course.user_fk)).first()
+    temp = db.query( User.id).filter(
+        and_( Course.id == course,
+              User.id ==  Course.user_fk)).first()
     user: int = temp[0]
 
     r: Optional[tuple[Date, int, str, str, str, str, str, str, str, str, int,
                       str, str]] = db.query(
-                          models.Audit.date, models.Audit.id,
-                          models.Course.code, models.Course.name,
-                          models.User.name, models.User.surname,
-                          models.Course.level_and_form_of_study,
-                          models.Course.didactic_form, models.Course.date,
-                          models.Course.participants_number,
-                          models.Course.place,
-                          models.Course.organizational_entity).filter(
-                              and_(models.Course.id == course,
-                                   models.Audit.id == audit_id,
-                                   models.User.id == user)).first()
+                           Audit.date,  Audit.id,
+                           Course.code,  Course.name,
+                           User.name,  User.surname,
+                           Course.level_and_form_of_study,
+                           Course.didactic_form,  Course.date,
+                           Course.participants_number,
+                           Course.place,
+                           Course.organizational_entity).filter(
+                              and_( Course.id == course,
+                                    Audit.id == audit_id,
+                                    User.id == user)).first()
 
     return {
         "date": r[0],
@@ -271,18 +272,18 @@ def get_audits_details(
 
 
 def put_confirm_protocol(protocol_id: int, db: Session) -> bool:
-    prot: Optional[models.Protocol] = db.query(
-        models.Protocol).filter(models.Protocol.id == protocol_id).first()
+    prot: Optional[ Protocol] = db.query(
+         Protocol).filter( Protocol.id == protocol_id).first()
     if prot is None:
         return False
 
-    db.query(models.Protocol).filter(models.Protocol.id == protocol_id).update(
-        {models.Protocol.is_approved: True})
+    db.query( Protocol).filter( Protocol.id == protocol_id).update(
+        { Protocol.is_approved: True})
     db.commit()
 
-    prot = db.query(models.Protocol).filter(
-        and_(models.Protocol.id == protocol_id,
-             models.Protocol.is_approved == True)).first()
+    prot = db.query( Protocol).filter(
+        and_( Protocol.id == protocol_id,
+              Protocol.is_approved == True)).first()
     if prot is None:
         return False
 
@@ -290,32 +291,32 @@ def put_confirm_protocol(protocol_id: int, db: Session) -> bool:
 
 
 def delete_appeal(protocol_id: int, user_id: int, db: Session) -> bool:
-    appeal: Optional[models.Appeal] = db.query(models.Appeal).filter(
-        and_(models.Appeal.protocol_fk == protocol_id,
-             models.Appeal.user_fk == user_id)).first()
+    appeal: Optional[ Appeal] = db.query( Appeal).filter(
+        and_( Appeal.protocol_fk == protocol_id,
+              Appeal.user_fk == user_id)).first()
     db.delete(appeal)
     db.commit()
-    appeal = db.query(models.Appeal).filter(
-        and_(models.Appeal.protocol_fk == protocol_id,
-             models.Appeal.user_fk == user_id)).first()
+    appeal = db.query( Appeal).filter(
+        and_( Appeal.protocol_fk == protocol_id,
+              Appeal.user_fk == user_id)).first()
     if appeal is None:
         return True
     return False
 
 
 def put_unconfirm_protocol(protocol_id: int, db: Session) -> bool:
-    prot: Optional[models.Protocol] = db.query(
-        models.Protocol).filter(models.Protocol.id == protocol_id).first()
+    prot: Optional[ Protocol] = db.query(
+         Protocol).filter( Protocol.id == protocol_id).first()
     if prot is None:
         return False
 
-    db.query(models.Protocol).filter(models.Protocol.id == protocol_id).update(
-        {models.Protocol.czy_zatwierdzona: False})
+    db.query( Protocol).filter( Protocol.id == protocol_id).update(
+        { Protocol.czy_zatwierdzona: False})
     db.commit()
 
-    prot = db.query(models.Protocol).filter(
-        and_(models.Protocol.id == protocol_id,
-             models.Protocol.is_approved == False)).first()
+    prot = db.query( Protocol).filter(
+        and_( Protocol.id == protocol_id,
+              Protocol.is_approved == False)).first()
     if prot is None:
         return False
 

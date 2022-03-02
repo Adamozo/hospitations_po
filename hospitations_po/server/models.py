@@ -1,13 +1,13 @@
 from sqlalchemy import Boolean, Column, Date, Float, ForeignKey, Integer, String, DECIMAL
 from sqlalchemy.schema import CheckConstraint
-from database import Base
+from hospitations_po.server.database import Base
 
 
 class Role(Base):
     __tablename__ = "role"
 
     id = Column(Integer, primary_key=True, index=True)
-    nazwa = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False)
 
 
 class User(Base):
