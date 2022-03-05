@@ -18,10 +18,10 @@ from datetime import datetime
 
 from hospitations_po.server.crud import * 
 from hospitations_po.server.models import *
-from hospitations_po.server.schemas import *
+from hospitations_po.server import schemas
 from hospitations_po.server.database import SessionLocal, engine
 
-Base.metadata.create_all(bind=engine)
+#Base.metadata.create_all(bind=engine)
 
 app: FastAPI = FastAPI(title="Twoje hospitacje")
 
@@ -35,14 +35,13 @@ def get_db():
 
 
 @app.get("/protokoly/prowadzacy/{prowadzacy}",
-         response_model=List[ ProtocolShort])
-def get_protocols_tutor(
+         response_model=List[schemas.ProtocolShort])
+def get_protocols_tutor_api(
     tutor_id: int, db: Session = Depends(get_db)
 ) -> Optional[list[dict[str, Union[str, int, float]]]]:
     try:
         protocols: list[dict[str, Union[str, int,
-                                        float]]] = get_protocols_tutor(
-                                            tutor_id, db)
+                                        float]]] = get_protocols_tutor(tutor_id, db=db)
         if len(protocols) == 0:
             raise HTTPException(status_code=404, detail="Protocols not found")
         return protocols
@@ -54,8 +53,8 @@ def get_protocols_tutor(
         raise HTTPException(status_code=500, detail="Inner server error")
 
 
-@app.get("/protokol/{protokol_id}", response_model= Protocol)
-def get_protocol_info(
+@app.get("/protokol/{protokol_id}", response_model= schemas.Protocol)
+def get_protocol_info_api(
     protocol_id: int,
     db: Session = Depends(get_db)) -> Optional[dict[str, Any]]:
     try:
@@ -71,9 +70,9 @@ def get_protocol_info(
         raise HTTPException(status_code=500, detail="Inner server error")
 
 
-@app.post("/odwolanie/create/{protokol_id}/", response_model= Appeal)
-def post_appeal(
-    appeal:  AppealCreate,
+@app.post("/odwolanie/create/{protokol_id}/", response_model= schemas.Appeal)
+def post_appeal_api(
+    appeal:  schemas.AppealCreate,
     user_id: int,
     protocol_id: int,
     db: Session = Depends(get_db)) -> Appeal:
@@ -82,7 +81,7 @@ def post_appeal(
         if protocol is None:
             raise HTTPException(status_code=404, detail="Protocol not found")
         else:
-            if protocol["czy_zatwierdzony"]:
+            if protocol.is_approved:
                 raise HTTPException(status_code=409,
                                     detail="Protocol already approved")
 
@@ -101,8 +100,8 @@ def post_appeal(
 
 
 @app.get("/protokoly/przewodniczacy/{przewodniczacy}",
-         response_model=List[ProtocolEdit])
-def get_protocols_comission_head(
+         response_model=List[schemas.ProtocolEdit])
+def get_protocols_comission_head_api(
     user_id: int, db: Session = Depends(get_db)
 ) -> list[dict[str, Union[int, bool, None, str]]]:
     try:
@@ -121,8 +120,8 @@ def get_protocols_comission_head(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/kurs/{protokol}", response_model=Course)
-def get_course_protocol(
+@app.get("/kurs/{protokol}", response_model=schemas.Course)
+def get_course_protocol_api(
     protocol_id: int, db: Session = Depends(get_db)
 ) -> Optional[dict[str, Union[str, int, None]]]:
     try:
@@ -130,7 +129,7 @@ def get_course_protocol(
                                          None]]] = get_course_protocol(
                                              protocol_id, db)
         if course is None:
-            raise HTTPException(status_code=404, detail="Kurs not found")
+            raise HTTPException(status_code=404, detail="Course not found")
         return course
 
     except HTTPException as e:
@@ -140,9 +139,9 @@ def get_course_protocol(
         raise HTTPException(status_code=500, detail="Inner server error")
 
 
-@app.put("/protokol/update/{protokol_id}", response_model=Protocol)
+@app.put("/protokol/update/{protokol_id}", response_model=schemas.Protocol)
 def put_protocol(
-    protocol: Protocol,
+    protocol: schemas.Protocol,
     protocol_id: int,
     db: Session = Depends(get_db)
 ) -> Optional[dict[str, Union[int, str, Decimal, Date, None]]]:
@@ -151,7 +150,7 @@ def put_protocol(
         if prot is None:
             raise HTTPException(status_code=404, detail="Protocol not found")
 
-        elif prot["is_accepted"]:
+        elif prot.is_approved:
             raise HTTPException(status_code=409, detail="Unable to update")
 
         else:
@@ -171,8 +170,8 @@ def put_protocol(
         raise HTTPException(status_code=500, detail="Inner server error")
 
 
-@app.get("/odwolanie/{protokol}", response_model=Boolean)
-def get_does_appeal_exists(
+@app.get("/odwolanie/{protokol}", response_model=bool)
+def get_does_appeal_exists_api(
     protocol_id: int, db: Session = Depends(get_db)) -> bool:
     try:
         return get_protocol_appeal(protocol_id=protocol_id, db=db)
@@ -181,8 +180,8 @@ def get_does_appeal_exists(
         raise HTTPException(status_code=500, detail="Inner server error")
 
 
-@app.get("/hospitacje/{user}", response_model=List[ProtocolEdit])
-def get_audits_to_do(
+@app.get("/hospitacje/{user}", response_model=List[schemas.AuditsSchedule])
+def get_audits_to_do_api(
     user_id, db: Session = Depends(get_db)
 ) -> Optional[list[dict[str, Union[Date, str, bool, int, None]]]]:
     try:
@@ -191,7 +190,7 @@ def get_audits_to_do(
                                          None]]]] = get_audits_schedule(
                                              user_id, db)
         if len(audits) == 0:
-            raise HTTPException(status_code=404, detail="Protocols not found")
+            raise HTTPException(status_code=404, detail="Audits not found")
         return audits
 
     except HTTPException as e:
@@ -202,8 +201,8 @@ def get_audits_to_do(
 
 
 @app.get("/hospitacja/detal/{hospitacja_id}",
-         response_model=ProtocolDetails)
-def get_audit_details(
+         response_model=schemas.AuditsDetails)
+def get_audit_details_api(
     audit_id, db: Session = Depends(get_db)
 ) -> Optional[dict[str, Union[Date, str, int, None]]]:
     try:
@@ -221,8 +220,8 @@ def get_audit_details(
         raise HTTPException(status_code=500, detail="Inner server error")
 
 
-@app.put("/protokol/set_true/{protokol_id}", response_model=Boolean)
-def put_accept_protocol(
+@app.put("/protokol/set_true/{protokol_id}", response_model=bool)
+def put_accept_protocol_api(
     protocol_id: int, db: Session = Depends(get_db)) -> bool:
     try:
         is_success: bool = put_confirm_protocol(protocol_id, db)
@@ -237,8 +236,8 @@ def put_accept_protocol(
         raise HTTPException(status_code=500, detail="Inner server error")
 
 
-@app.delete('/odwolanie/delete/{protokol_id}', response_model=Boolean)
-def delete_appeal(protocol_id: int,
+@app.delete('/odwolanie/delete/{protokol_id}', response_model=bool)
+def delete_appeal_api(protocol_id: int,
                   user_id: int,
                   db: Session = Depends(get_db)) -> bool:
     try:
@@ -252,8 +251,8 @@ def delete_appeal(protocol_id: int,
         return False
 
 
-@app.put("/protokol/set_false/{protokol_id}", response_model=Boolean)
-def put_unaccept_protocol(
+@app.put("/protokol/set_false/{protokol_id}", response_model=bool)
+def put_unaccept_protocol_api(
     protocol_id: int, db: Session = Depends(get_db)) -> Optional[bool]:
     try:
         is_success: bool = put_unconfirm_protocol(protocol_id, db)

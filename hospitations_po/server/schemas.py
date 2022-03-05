@@ -12,6 +12,30 @@ class AppealBase(BaseModel):
     date: date
 
 
+class AuditsSchedule(BaseModel):
+    date: date
+    id: int
+    course_number: str
+    course_name: str
+    appealed_name: str
+    appealed_surname: str
+
+
+class AuditsDetails(BaseModel):
+    date: date
+    id: int
+    course_number: str
+    course_name: str
+    appealed_name: str
+    appealed_surname: str
+    level_and_form_of_study: str
+    didactic_form: str
+    course_date: str
+    participants_number: int
+    place: str
+    organizational_entity:str
+
+
 class AppealCreate(AppealBase):
 
     class Config:
@@ -28,7 +52,7 @@ class Appeal(AppealBase):
 
 class ProtocolBase(BaseModel):
     date: date
-    is_approved: Boolean
+    is_approved: bool
 
 
 class ProtocolCreate(ProtocolBase):
@@ -59,18 +83,18 @@ class Protocol(ProtocolBase):
 
 class ProtocolShort(ProtocolBase):
     id: int
-    cournse_number: str
+    course_number: str
     course_name: str
     mark: Optional[str] = None
 
 
 class ProtocolEdit(ProtocolBase):
     id: int
-    cournse_number: str
+    course_number: str
     course_name: str
     audited_name: str
     audited_surname: str
-    is_sent: Boolean
+    is_sent: bool
 
 
 class ProtocolDetails(ProtocolEdit):
