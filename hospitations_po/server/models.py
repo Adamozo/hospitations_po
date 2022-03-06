@@ -28,7 +28,8 @@ class User(Base):
     name = Column(String, nullable=False)
     surname = Column(String, nullable=False)
 
-    def __init__(self, login:str, password:str, phone_number:str, email:str, role_fk: int, name:str, surname:str) -> None:
+    def __init__(self, login: str, password: str, phone_number: str,
+                 email: str, role_fk: int, name: str, surname: str) -> None:
         self.login = login
         self.password = password
         self.phone_number = phone_number
@@ -47,7 +48,7 @@ class Audit_commission(Base):
                      index=True,
                      nullable=False)
 
-    def __init__(self, commitetee_lider:int) -> None:
+    def __init__(self, commitetee_lider: int) -> None:
         self.user_fk = commitetee_lider
 
 
@@ -65,7 +66,7 @@ class Audit_commission_User(Base):
                      nullable=False,
                      primary_key=True)
 
-    def __init__(self, audit_commission_fk: str, user_fk:str) -> None:
+    def __init__(self, audit_commission_fk: str, user_fk: str) -> None:
         self.audit_commission_fk = audit_commission_fk
         self.user_fk = user_fk
 
@@ -75,7 +76,7 @@ class Mark(Base):
 
     mark = Column(Float, primary_key=True, unique=True)
 
-    def __init__(self, mark:float) -> None:
+    def __init__(self, mark: float) -> None:
         self.mark = mark
 
 
@@ -100,9 +101,23 @@ class Protocol(Base):
     control_mark_fk = Column(Float, ForeignKey('mark.mark'))
     creation_mark_fk = Column(Float, ForeignKey('mark.mark'))
 
-    def __init__(self, date: Date,is_approved: bool, is_sent: bool, mark: float = None,  justification: str = None, conclusions_and_recommendations: str = None, read_date: Date = None,
-    presentation_mark_fk: float = None, explanation_mark_fk: float = None, realization_mark_fk: float = None, inspiration_mark_fk: float = None, participation_mark_fk: float = None,
-    use_of_learning_methods_mark_fk: float = None, use_of_tools_mark_fk: float = None, control_mark_fk: float = None, creation_mark_fk: float = None) -> None:
+    def __init__(self,
+                 date: Date,
+                 is_approved: bool,
+                 is_sent: bool,
+                 mark: float = None,
+                 justification: str = None,
+                 conclusions_and_recommendations: str = None,
+                 read_date: Date = None,
+                 presentation_mark_fk: float = None,
+                 explanation_mark_fk: float = None,
+                 realization_mark_fk: float = None,
+                 inspiration_mark_fk: float = None,
+                 participation_mark_fk: float = None,
+                 use_of_learning_methods_mark_fk: float = None,
+                 use_of_tools_mark_fk: float = None,
+                 control_mark_fk: float = None,
+                 creation_mark_fk: float = None) -> None:
         self.date = date
         self.mark = mark
         self.justification = justification
@@ -118,7 +133,7 @@ class Protocol(Base):
         self.use_of_learning_methods_mark_fk = use_of_learning_methods_mark_fk
         self.use_of_tools_mark_fk = use_of_tools_mark_fk
         self.control_mark_fk = control_mark_fk
-        self.creation_mark_fk = creation_mark_fk 
+        self.creation_mark_fk = creation_mark_fk
 
 
 class Course(Base):
@@ -139,7 +154,10 @@ class Course(Base):
     organizational_entity = Column(String, nullable=False)
     term = Column(String, nullable=False)
 
-    def __init__(self, user_fk: int, name: str, code: str, level_and_form_of_study: str, didactic_form: str, date:str, participants_number: str, place: str, organizational_entity: str, term: str) -> None:
+    def __init__(self, user_fk: int, name: str, code: str,
+                 level_and_form_of_study: str, didactic_form: str, date: str,
+                 participants_number: str, place: str,
+                 organizational_entity: str, term: str) -> None:
         self.user_fk = user_fk
         self.name = name
         self.code = code
@@ -166,7 +184,7 @@ class User_Course(Base):
                      nullable=False,
                      primary_key=True)
 
-    def __init__(self, course_fk: int, user_fk:int) -> None:
+    def __init__(self, course_fk: int, user_fk: int) -> None:
         self.course_fk = course_fk
         self.user_fk = user_fk
 
@@ -181,9 +199,14 @@ class Schedule(Base):
     term_start = Column(Date, nullable=False)
     term_end = Column(Date, nullable=False)
 
-    def __init__(self, term: str, academic_year: str, term_start: Date, term_end: Date, approval_date: Date = None) -> None:
+    def __init__(self,
+                 term: str,
+                 academic_year: str,
+                 term_start: Date,
+                 term_end: Date,
+                 approval_date: Date = None) -> None:
         self.term = term
-        self. academic_year = academic_year
+        self.academic_year = academic_year
         self.approval_date = approval_date
         self.term_start = term_start
         self.term_end = term_end
@@ -215,7 +238,8 @@ class Audit(Base):
                          index=True,
                          nullable=False)
 
-    def __init__(self, audit_comission_fk: int, schedule_fk: int, user_fk: int, date: Date, course_fk: int, protcol_fk: int) -> None:
+    def __init__(self, audit_comission_fk: int, schedule_fk: int, user_fk: int,
+                 date: Date, course_fk: int, protcol_fk: int) -> None:
         self.audit_commission_fk = audit_comission_fk
         self.schedule_fk = schedule_fk
         self.user_fk = user_fk
@@ -239,7 +263,8 @@ class Appeal(Base):
                          index=True,
                          nullable=False)
 
-    def __init__(self, user_fk:int, date:Date, text:str, protocol_fk:str) -> None:
+    def __init__(self, user_fk: int, date: Date, text: str,
+                 protocol_fk: str) -> None:
         self.user_fk = user_fk
         self.date = date
         self.text = text

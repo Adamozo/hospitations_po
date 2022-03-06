@@ -16,8 +16,8 @@ from sqlalchemy import null
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from hospitations_po.server.crud import * 
-from hospitations_po.server.models import *
+from hospitations_po.server import crud
+from hospitations_po.server import models
 from hospitations_po.server import schemas
 from hospitations_po.server.database import SessionLocal, engine
 
@@ -38,10 +38,10 @@ def get_db():
          response_model=List[schemas.ProtocolShort])
 def get_protocols_tutor_api(
     tutor_id: int, db: Session = Depends(get_db)
-) -> Optional[list[dict[str, Union[str, int, float]]]]:
+) -> Optional[list[schemas.ProtocolShort]]:
     try:
-        protocols: list[dict[str, Union[str, int,
-                                        float]]] = get_protocols_tutor(tutor_id, db=db)
+        protocols: list[schemas.ProtocolShort] = crud.get_protocols_tutor(
+            tutor_id, db=db)
         if len(protocols) == 0:
             raise HTTPException(status_code=404, detail="Protocols not found")
         return protocols
@@ -53,12 +53,13 @@ def get_protocols_tutor_api(
         raise HTTPException(status_code=500, detail="Inner server error")
 
 
-@app.get("/protokol/{protokol_id}", response_model= schemas.Protocol)
+@app.get("/protokol/{protokol_id}", response_model=schemas.Protocol)
 def get_protocol_info_api(
     protocol_id: int,
-    db: Session = Depends(get_db)) -> Optional[dict[str, Any]]:
+    db: Session = Depends(get_db)) -> Optional[schemas.Protocol]:
     try:
-        protocol: Optional[dict[str, Any]] = get_protocol(protocol_id, db)
+        protocol: Optional[schemas.Protocol] = crud.get_protocol(
+            protocol_id, db)
         if protocol is None:
             raise HTTPException(status_code=404, detail="Protocol not found")
         return protocol
@@ -70,14 +71,15 @@ def get_protocol_info_api(
         raise HTTPException(status_code=500, detail="Inner server error")
 
 
-@app.post("/odwolanie/create/{protokol_id}/", response_model= schemas.Appeal)
+@app.post("/odwolanie/create/{protokol_id}/", response_model=schemas.Appeal)
 def post_appeal_api(
-    appeal:  schemas.AppealCreate,
+    appeal: schemas.AppealCreate,
     user_id: int,
     protocol_id: int,
-    db: Session = Depends(get_db)) -> Appeal:
+    db: Session = Depends(get_db)) -> models.Appeal:
     try:
-        protocol: Optional[dict[str, Any]] = get_protocol(protocol_id, db)
+        protocol: Optional[schemas.Protocol] = crud.get_protocol(
+            protocol_id, db)
         if protocol is None:
             raise HTTPException(status_code=404, detail="Protocol not found")
         else:
@@ -85,12 +87,12 @@ def post_appeal_api(
                 raise HTTPException(status_code=409,
                                     detail="Protocol already approved")
 
-            temp = get_appeal(protocol_id, db)
+            temp: Optional[models.Appeal] = crud.get_appeal(protocol_id, db)
             if temp is not None:
                 raise HTTPException(status_code=409,
                                     detail="Error during odwolanie creation")
 
-            return insert_appeal(appeal, user_id, protocol_id, db)
+            return crud.insert_appeal(appeal, user_id, protocol_id, db)
 
     except HTTPException as e:
         raise e
@@ -102,13 +104,11 @@ def post_appeal_api(
 @app.get("/protokoly/przewodniczacy/{przewodniczacy}",
          response_model=List[schemas.ProtocolEdit])
 def get_protocols_comission_head_api(
-    user_id: int, db: Session = Depends(get_db)
-) -> list[dict[str, Union[int, bool, None, str]]]:
+    user_id: int, db: Session = Depends(get_db)) -> list[schemas.ProtocolEdit]:
     try:
-        protocols: list[dict[str,
-                             Union[int, bool, None,
-                                   str]]] = get_protocols_comission_head(
-                                       user_id, db)
+        protocols: list[
+            schemas.ProtocolEdit] = crud.get_protocols_comission_head(
+                user_id, db)
         if len(protocols) == 0:
             raise HTTPException(status_code=404, detail="Protocols not found")
         return protocols
@@ -122,12 +122,11 @@ def get_protocols_comission_head_api(
 
 @app.get("/kurs/{protokol}", response_model=schemas.Course)
 def get_course_protocol_api(
-    protocol_id: int, db: Session = Depends(get_db)
-) -> Optional[dict[str, Union[str, int, None]]]:
+    protocol_id: int,
+    db: Session = Depends(get_db)) -> Optional[schemas.Course]:
     try:
-        course: Optional[dict[str, Union[str, int,
-                                         None]]] = get_course_protocol(
-                                             protocol_id, db)
+        course: Optional[schemas.Course] = crud.get_course_protocol(
+            protocol_id, db)
         if course is None:
             raise HTTPException(status_code=404, detail="Course not found")
         return course
@@ -143,10 +142,9 @@ def get_course_protocol_api(
 def put_protocol(
     protocol: schemas.Protocol,
     protocol_id: int,
-    db: Session = Depends(get_db)
-) -> Optional[dict[str, Union[int, str, Decimal, Date, None]]]:
+    db: Session = Depends(get_db)) -> Optional[schemas.Protocol]:
     try:
-        prot: Optional[dict[str, Any]] = get_protocol(protocol_id, db)
+        prot: Optional[schemas.Protocol] = crud.get_protocol(protocol_id, db)
         if prot is None:
             raise HTTPException(status_code=404, detail="Protocol not found")
 
@@ -154,9 +152,8 @@ def put_protocol(
             raise HTTPException(status_code=409, detail="Unable to update")
 
         else:
-            res: Optional[dict[str, Union[int, str, Decimal, Date,
-                                          None]]] = update_protocol(
-                                              protocol, protocol_id, db)
+            res: Optional[schemas.Protocol] = crud.update_protocol(
+                protocol, protocol_id, db)
             if res is None:
                 raise HTTPException(status_code=409, detail="Unable to update")
 
@@ -174,7 +171,7 @@ def put_protocol(
 def get_does_appeal_exists_api(
     protocol_id: int, db: Session = Depends(get_db)) -> bool:
     try:
-        return get_protocol_appeal(protocol_id=protocol_id, db=db)
+        return crud.get_protocol_appeal(protocol_id=protocol_id, db=db)
 
     except:
         raise HTTPException(status_code=500, detail="Inner server error")
@@ -183,12 +180,10 @@ def get_does_appeal_exists_api(
 @app.get("/hospitacje/{user}", response_model=List[schemas.AuditsSchedule])
 def get_audits_to_do_api(
     user_id, db: Session = Depends(get_db)
-) -> Optional[list[dict[str, Union[Date, str, bool, int, None]]]]:
+) -> Optional[list[schemas.AuditsSchedule]]:
     try:
-        audits: Optional[list[dict[str,
-                                   Union[Date, str, bool, int,
-                                         None]]]] = get_audits_schedule(
-                                             user_id, db)
+        audits: Optional[list[
+            schemas.AuditsSchedule]] = crud.get_audits_schedule(user_id, db)
         if len(audits) == 0:
             raise HTTPException(status_code=404, detail="Audits not found")
         return audits
@@ -203,12 +198,11 @@ def get_audits_to_do_api(
 @app.get("/hospitacja/detal/{hospitacja_id}",
          response_model=schemas.AuditsDetails)
 def get_audit_details_api(
-    audit_id, db: Session = Depends(get_db)
-) -> Optional[dict[str, Union[Date, str, int, None]]]:
+    audit_id,
+    db: Session = Depends(get_db)) -> Optional[schemas.AuditsDetails]:
     try:
-        audit: Optional[dict[str, Union[Date, str, int,
-                                        None]]] = get_audits_details(
-                                            audit_id, db)
+        audit: Optional[schemas.AuditsDetails] = crud.get_audits_details(
+            audit_id, db)
         if audit is None:
             raise HTTPException(status_code=404, detail="Audit not found")
         return audit
@@ -224,7 +218,7 @@ def get_audit_details_api(
 def put_accept_protocol_api(
     protocol_id: int, db: Session = Depends(get_db)) -> bool:
     try:
-        is_success: bool = put_confirm_protocol(protocol_id, db)
+        is_success: bool = crud.put_confirm_protocol(protocol_id, db)
         if is_success:
             return True
         raise HTTPException(status_code=404, detail="Protocols not found")
@@ -238,10 +232,10 @@ def put_accept_protocol_api(
 
 @app.delete('/odwolanie/delete/{protokol_id}', response_model=bool)
 def delete_appeal_api(protocol_id: int,
-                  user_id: int,
-                  db: Session = Depends(get_db)) -> bool:
+                      user_id: int,
+                      db: Session = Depends(get_db)) -> bool:
     try:
-        result = delete_appeal(protocol_id, user_id, db=db)
+        result: bool = crud.delete_appeal(protocol_id, user_id, db=db)
         return result
 
     except HTTPException as e:
@@ -255,7 +249,7 @@ def delete_appeal_api(protocol_id: int,
 def put_unaccept_protocol_api(
     protocol_id: int, db: Session = Depends(get_db)) -> Optional[bool]:
     try:
-        is_success: bool = put_unconfirm_protocol(protocol_id, db)
+        is_success: bool = crud.put_unconfirm_protocol(protocol_id, db)
         if is_success:
             return True
         raise HTTPException(status_code=404, detail="Protocols not found")

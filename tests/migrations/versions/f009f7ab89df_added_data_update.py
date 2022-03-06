@@ -11,7 +11,6 @@ from sqlalchemy import String, Column
 from sqlalchemy.sql import table, column
 from tests.db_data import *
 
-
 # revision identifiers, used by Alembic.
 revision = 'f009f7ab89df'
 down_revision = '4664efb10f26'
@@ -30,10 +29,11 @@ def downgrade():
 
 
 def data_upgrades():
-    engine = sa.create_engine(
-    "sqlite:///./test.db", connect_args={"check_same_thread": False}
-    )
-    Session = sa.orm.sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    engine = sa.create_engine("sqlite:///./test.db",
+                              connect_args={"check_same_thread": False})
+    Session = sa.orm.sessionmaker(autocommit=False,
+                                  autoflush=False,
+                                  bind=engine)
 
     db = Session(bind=engine.connect())
 
@@ -71,7 +71,7 @@ def data_upgrades():
     db.commit()
 
     db.close()
-  
+
 
 def data_downgrades():
     op.execute("delete from role where 1=1")

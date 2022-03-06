@@ -33,7 +33,7 @@ class AuditsDetails(BaseModel):
     course_date: str
     participants_number: int
     place: str
-    organizational_entity:str
+    organizational_entity: str
 
 
 class AppealCreate(AppealBase):

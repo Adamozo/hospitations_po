@@ -11,11 +11,11 @@ from hospitations_po.server.main import app, get_db
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///tests/test.db"
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
+engine = create_engine(SQLALCHEMY_DATABASE_URL,
+                       connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(autocommit=False,
+                                   autoflush=False,
+                                   bind=engine)
 
 # Base.metadata.create_all(bind=engine)
 
@@ -26,9 +26,9 @@ def override_get_db():
     transaction = connection.begin()
 
     db = TestingSessionLocal(bind=connection)
-   
+
     yield db
-    
+
     db.rollback()
     db.close()
 
@@ -36,6 +36,7 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 
 client = TestClient(app)
+
 
 def test_api_get_protocols_tutor():
     # tutor with course
@@ -118,69 +119,69 @@ def test_api_get_course_protocol():
 
 def test_api_put_protocol():
     # protocol that does not exist
-    response = client.put("/protokol/update/200?protocol_id=200", 
-                            json={
-                                "date": "2022-03-05",
-                                "is_approved": True,
-                                "mark": "string",
-                                "justification": "string",
-                                "conclusions_and_recommendations": "string",
-                                "read_date": "2022-03-05",
-                                "is_sent": True,
-                                "presentation_mark_fk": 0,
-                                "explanation_mark_fk": 0,
-                                "realization_mark_fk": 0,
-                                "inspiration_mark_fk": 0,
-                                "participation_mark_fk": 0,
-                                "use_of_learning_methods_mark_fk": 0,
-                                "use_of_tools_mark_fk": 0,
-                                "control_mark_fk": 0,
-                                "creation_mark_fk": 0
-                                })
+    response = client.put("/protokol/update/200?protocol_id=200",
+                          json={
+                              "date": "2022-03-05",
+                              "is_approved": True,
+                              "mark": "string",
+                              "justification": "string",
+                              "conclusions_and_recommendations": "string",
+                              "read_date": "2022-03-05",
+                              "is_sent": True,
+                              "presentation_mark_fk": 0,
+                              "explanation_mark_fk": 0,
+                              "realization_mark_fk": 0,
+                              "inspiration_mark_fk": 0,
+                              "participation_mark_fk": 0,
+                              "use_of_learning_methods_mark_fk": 0,
+                              "use_of_tools_mark_fk": 0,
+                              "control_mark_fk": 0,
+                              "creation_mark_fk": 0
+                          })
     assert response.status_code == 404
 
     # protocol that is acceppted
-    response = client.put("/protokol/update/2?protocol_id=2", 
-                            json={
-                                "date": "2022-03-05",
-                                "is_approved": True,
-                                "mark": "string",
-                                "justification": "string",
-                                "conclusions_and_recommendations": "string",
-                                "read_date": "2022-03-05",
-                                "is_sent": True,
-                                "presentation_mark_fk": 0,
-                                "explanation_mark_fk": 0,
-                                "realization_mark_fk": 0,
-                                "inspiration_mark_fk": 0,
-                                "participation_mark_fk": 0,
-                                "use_of_learning_methods_mark_fk": 0,
-                                "use_of_tools_mark_fk": 0,
-                                "control_mark_fk": 0,
-                                "creation_mark_fk": 0
-                                })
+    response = client.put("/protokol/update/2?protocol_id=2",
+                          json={
+                              "date": "2022-03-05",
+                              "is_approved": True,
+                              "mark": "string",
+                              "justification": "string",
+                              "conclusions_and_recommendations": "string",
+                              "read_date": "2022-03-05",
+                              "is_sent": True,
+                              "presentation_mark_fk": 0,
+                              "explanation_mark_fk": 0,
+                              "realization_mark_fk": 0,
+                              "inspiration_mark_fk": 0,
+                              "participation_mark_fk": 0,
+                              "use_of_learning_methods_mark_fk": 0,
+                              "use_of_tools_mark_fk": 0,
+                              "control_mark_fk": 0,
+                              "creation_mark_fk": 0
+                          })
     assert response.status_code == 409
 
     # protocol that can be updated
-    response = client.put("/protokol/update/3?protocol_id=3", 
-                            json={
-                                "date": "2022-03-05",
-                                "is_approved": True,
-                                "mark": "string",
-                                "justification": "string",
-                                "conclusions_and_recommendations": "string",
-                                "read_date": "2022-03-05",
-                                "is_sent": True,
-                                "presentation_mark_fk": 0,
-                                "explanation_mark_fk": 0,
-                                "realization_mark_fk": 0,
-                                "inspiration_mark_fk": 0,
-                                "participation_mark_fk": 0,
-                                "use_of_learning_methods_mark_fk": 0,
-                                "use_of_tools_mark_fk": 0,
-                                "control_mark_fk": 0,
-                                "creation_mark_fk": 0
-                                })
+    response = client.put("/protokol/update/3?protocol_id=3",
+                          json={
+                              "date": "2022-03-05",
+                              "is_approved": True,
+                              "mark": "string",
+                              "justification": "string",
+                              "conclusions_and_recommendations": "string",
+                              "read_date": "2022-03-05",
+                              "is_sent": True,
+                              "presentation_mark_fk": 0,
+                              "explanation_mark_fk": 0,
+                              "realization_mark_fk": 0,
+                              "inspiration_mark_fk": 0,
+                              "participation_mark_fk": 0,
+                              "use_of_learning_methods_mark_fk": 0,
+                              "use_of_tools_mark_fk": 0,
+                              "control_mark_fk": 0,
+                              "creation_mark_fk": 0
+                          })
     assert response.status_code == 200
 
 
@@ -195,11 +196,12 @@ def test_api_get_does_appeal_exists():
     assert response.status_code == 200
     assert response.json() == False
 
+
 def test_api_get_audits_to_do():
     # user with audits
     response = client.get("/hospitacje/1?user_id=1")
     assert response.status_code == 200
-    assert len(response.json()) == 1 
+    assert len(response.json()) == 1
 
     # user without audits
     response = client.get("/hospitacje/100?user_id=100")
@@ -231,7 +233,8 @@ def test_api_delete_appeal():
     assert response.status_code == 200
     assert response.json() == True
 
-    response = client.delete("/odwolanie/delete/900?protocol_id=900&user_id=200")
+    response = client.delete(
+        "/odwolanie/delete/900?protocol_id=900&user_id=200")
     assert response.status_code == 200
     assert response.json() == False
 
