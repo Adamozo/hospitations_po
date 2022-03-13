@@ -1,0 +1,25 @@
+version: '3.3'
+
+services:
+  web:
+    build: .
+    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn hospitations_po.server.main:app --host=0.0.0.0 --reload'
+    volumes:
+      - .:/hospitations_po/server
+    ports:
+      - 8008:8000
+    depends_on:
+      - db
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=po
+
+volumes:
+  postgres_data:
